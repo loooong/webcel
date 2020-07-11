@@ -1,0 +1,86 @@
+import { FORMULA_STATUS } from '../../calc_utils/config';
+import { ERROR_NON_SOLVED, FAIL_PARSE } from '../../calc_utils/error_config';
+import { CellVEmpty} from '../../../internal_module/basic_cell_value';
+import { CalcCell } from '../../calc_data_proxy/calc_cell';
+import {BoolParser,
+  DateTimeParser,
+  ForceString,
+  MoneyParser,
+  NumberParser
+} from '../../calc_data_proxy/parser_proxy';
+import { convertToCellV } from '../../cell_value_type/complex_celll_value';
+
+export class SimpleExpressionBuilder { // 解析不含等号的那些表达式
+  /**
+   *
+   */
+  constructor(calcCell) {
+    this.parseArray = [ForceString, BoolParser, DateTimeParser, MoneyParser, NumberParser]; // 需要遍历的解析器
+    this.rootExp = new SimpleExpression(this.calcCell); // 初始化是一个空的
+    this.calcCell = calcCell;
+  }
+
+  /**
+   *
+   * @return {*}
+   */
+  parseFormula() {
+    let res;
+    this.rootExp = new SimpleExpression(this.calcCell, this.calcCell.formulaString, this.parseArray);
+    this.rootExp.parseExpression();
+    return this.rootExp;
+  }
+}
+
+/**
+ * @property {CalcCell} calcCell
+ */
+class SimpleExpression {
+  // 拥有解析与计算两个能力
+  // calcCell: CalcCell
+  constructor(calcCell, strToParse = '', parseArray) {
+    this.expStatus = FORMULA_STATUS.created;
+    this.calcCell = calcCell;
+    this.strToParse = strToParse;
+    this.parserArray = parseArray; // 多个解析器尝试解析
+    this.parseRes = '';
+    this.expSolution = ERROR_NON_SOLVED; // 初始化解决
+  }
+
+  parseExpression() {
+    let res;
+    for (let parserCls of this.parserArray) { // 试图用多个解析器来解析
+      res = new parserCls(this.calcCell, this.strToParse).parseString();
+      if (res.msg !== FAIL_PARSE) {
+        this.parseRes = res;
+        return res; // 解析成功
+      }
+    }
+    this.parseRes = this.strToParse;
+    return this.strToParse; // 解析为其他类型不成功, 直接当成字符串
+  }
+
+  isEmpty() {
+    return this.strToParse === '';
+  }
+
+
+  solveExpression() {
+    // 首先所有的子参数都要获得结果
+    if (this.isEmpty()) {
+      this.expSolution = new CellVEmpty(); // 空值,得到这个结果
+    } else {
+      this.expSolution = convertToCellV(this.parseRes);
+    }
+    this.expStatus = FORMULA_STATUS.solved;
+    return this.expSolution;
+  }
+
+  update_cell_value() {
+    this.calcCell.cellObj.v = this.solveExpression();
+    return this.calcCell.cellObj.v;
+  }
+
+}
+
+

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ch-zn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>financial-cell</title>
+    <style>
+        .button {
+            background-color: rgb(80, 163, 230);
+            border: none;
+            color: white;
+            padding: 1px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .textinput:focus {
+            -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+            -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+            border: 1px solid #4d90fe;
+            outline: none;
+        }
+
+        .addRowsInput {
+            margin: 0 4px 0 4px;
+            vertical-align: middle;
+        }
+
+        .foot-container-btn:hover {
+            cursor: pointer !important;
+            border: 1px solid rgba(0, 0, 0, .2) !important;
+            background-color: #f8f8f8 !important;
+        }
+    </style>
+<!--        <script src="https://unpkg.com/vue/dist/vue.js"></script>-->
+</head>
+<body onload="load()" style="overflow: hidden; background-color: rgb(245, 246, 247);">
+
+<div class="button" id="calcHelp">
+    帮我算一算
+</div>
+<div id="financial-cell"></div>
+<script>
+  function load() {
+    let theWorkbookComp = new financialCell.WorkbookComp()
+    let cureSpreadsheet = theWorkbookComp.createASpreadSheetByDefaultSetting('#financial-cell')
+      .addPostChangeDataFunc((cdata) => {
+        console.log(cdata);
+        console.log(cureSpreadsheet.validate());
+      });
+    let calcHelp = document.getElementById('calcHelp');
+    calcHelp.addEventListener('click', () => {
+      alert('您好，请使用Ctrl+D进行添加到收藏。');
+    });
+
+  }
+</script>
+</body>
+</html>

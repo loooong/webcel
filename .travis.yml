@@ -1,0 +1,34 @@
+language: node_js
+
+node_js:
+ - 10.12.0
+
+cache:
+  directories:
+    - node_modules
+
+branches:
+  only:
+  - dev
+
+install:
+ - npm install -g istanbul
+ - npm install
+
+before_script:
+
+script:
+  - npm run errorPop_test
+  - npm run build
+
+after_script:
+ - git clone https://github.com/zhilu-nanjing/zhilu-demo.git
+ - cd zhilu-demo
+ - rm -rf dist
+ - cp -r ../dist .
+ - git config user.name "zhilu2020"
+ - git config user.email "515822856@qq.com"
+ - git add .
+ - git commit -m "update dist"
+ - git push --quiet "https://${zhilu}@github.com/zhilu-nanjing/zhilu-demo.git" master:master
+
